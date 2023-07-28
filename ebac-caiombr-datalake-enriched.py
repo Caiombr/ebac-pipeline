@@ -11,7 +11,7 @@ import pyarrow.parquet as pq
 def lambda_handler(event: dict, context: dict) -> bool:
 
   '''
-  Diariamente é executado para compactar as diversas mensagensm, no formato
+  Diariamente é executado para compactar as diversas mensagens, no formato
   JSON, do dia anterior, armazenadas no bucket de dados cru, em um único 
   arquivo no formato PARQUET, armazenando-o no bucket de dados enriquecidos
   '''
@@ -88,10 +88,19 @@ def parse_data(data: dict) -> dict:
               if k in ['id', 'type']:
                 parsed_data[f"{key if key == 'chat' else 'user'}_{k}"] = [v]
 
+      elif key in ['text','voice','photo','video','new_chat_participant']:
+        
+          parsed_data['data_type'] = [key]      
+      
       elif key in ['message_id', 'date', 'text']:
+          
           parsed_data[key] = [value]
+  
+  # Verifica se a chave 'data_type' não foi adicionada no loop e define o valor padrão
+  if 'data_type' not in parsed_data:
+    parsed_data['data_type'] = ['unknown']
 
   if not 'text' in parsed_data.keys():
-    parsed_data['text'] = [None]
+    parsed_data['text'] = ['sem mensagem']
 
   return parsed_data
