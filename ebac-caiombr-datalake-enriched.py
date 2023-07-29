@@ -71,36 +71,38 @@ def lambda_handler(event: dict, context: dict) -> bool:
       
 def parse_data(data: dict) -> dict:
 
-  date = datetime.now().strftime('%Y-%m-%d')
-  timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    date = datetime.now().strftime('%Y-%m-%d')
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-  parsed_data = dict()
+    parsed_data = dict()
 
-  for key, value in data.items():
+    for key, value in data.items():
 
-      if key == 'from':
-          for k, v in data[key].items():
-              if k in ['id', 'is_bot', 'first_name']:
-                parsed_data[f"{key if key == 'chat' else 'user'}_{k}"] = [v]
+        if key == 'from':
+            for k, v in data[key].items():
+                if k in ['id', 'is_bot', 'first_name']:
+                    parsed_data[f"{key if key == 'chat' else 'user'}_{k}"] = [v]
 
-      elif key == 'chat':
-          for k, v in data[key].items():
-              if k in ['id', 'type']:
-                parsed_data[f"{key if key == 'chat' else 'user'}_{k}"] = [v]
-
-      elif key in ['text','voice','photo','video','new_chat_participant']:
-        
-          parsed_data['data_type'] = [key]      
+        elif key == 'chat':
+            for k, v in data[key].items():
+                if k in ['id', 'type']:
+                    parsed_data[f"{key if key == 'chat' else 'user'}_{k}"] = [v]
       
-      elif key in ['message_id', 'date', 'text']:
-          
-          parsed_data[key] = [value]
-  
+        elif key in ['message_id', 'date']:
+            parsed_data[key] = [value]
+
+        elif key == 'text':
+            parsed_data['data_type'] = [key]
+            parsed_data[key] = [value]
+   
+        elif key in ['voice', 'photo', 'video', 'new_chat_participant']:
+            parsed_data['data_type'] = [key]
+
   # Verifica se a chave 'data_type' não foi adicionada no loop e define o valor padrão
-  if 'data_type' not in parsed_data:
-    parsed_data['data_type'] = ['unknown']
+    if 'data_type' not in parsed_data:
+        parsed_data['data_type'] = ['unknown']
 
-  if not 'text' in parsed_data.keys():
-    parsed_data['text'] = ['sem mensagem']
+    if not 'text' in parsed_data.keys():
+        parsed_data['text'] = ['sem mensagem']
 
-  return parsed_data
+    return parsed_data
